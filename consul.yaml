@@ -1,0 +1,41 @@
+- name: consul.service
+  command: start
+  content: |
+    [Unit]
+    Description=Consul Server Agent
+    After=docker.service
+    After=etcd2.service
+    After=fleet.service
+    [Service]
+    Restart=on-failure
+    RestartSec=240
+    ExecStartPre=/usr/bin/docker pull progrium/consul
+    ExecStart=/bin/sh -c "eval $(docker run --rm progrium/consul cmd:run IPV4_PUBLIC -d)"
+
+- name: consul-members.service
+  command: start
+  content: |
+    [Unit]
+    Description=Consul Server Agent
+    After=docker.service
+    After=etcd2.service
+    After=fleet.service
+    [Service]
+    Restart=on-failure
+    RestartSec=240
+    ExecStartPre=/usr/bin/docker pull progrium/consul
+    ExecStart=/bin/sh -c "eval $(docker run --rm progrium/consul cmd:run IPV4_PUBLIC::172.21.64.149 -d)"
+
+- name: vault.service
+  command: start
+  content: |
+    [Unit]
+    Description=Vault Server Agent
+    After=docker.service
+    After=etcd2.service
+    After=fleet.service
+    [Service]
+    Restart=on-failure
+    RestartSec=240
+    ExecStartPre=/usr/bin/docker pull sjourdan/vault
+    ExecStart=/usr/bin/docker run -d -p 8200:8200 --hostname vault --name vault --volume /tmp/config:/config sjourdan/vault server -config=/config/consul.hcl
